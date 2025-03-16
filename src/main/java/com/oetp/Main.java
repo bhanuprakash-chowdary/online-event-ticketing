@@ -76,7 +76,10 @@ public class Main {
                 } else if (parts[0].equals("status")) {
                     System.out.println("Bookings - Queued: " + service.getQueuedBookings() +
                             ", Completed: " + service.getCompletedBookings());
-                } else {
+                } else if (parts[0].equals("stats")){
+                    service.printStats();
+                }
+                else {
                     System.out.println("Unknown command - type 'help'");
                 }
             } catch (NumberFormatException e) {
