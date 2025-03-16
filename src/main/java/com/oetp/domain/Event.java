@@ -35,4 +35,28 @@ public class Event {
         }while(!availableTickets.compareAndSet(current,current-quantity));
         return true;
     }
+
+    @Override
+    public int hashCode() {
+//        return name != null ? name.hashCode() : 0;
+        int result = id; // Simple base
+        result = 31 * result + (name != null ? name.hashCode() : 0); // Mix in name
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if(this==obj){
+            return true;
+        }
+
+        if(! (obj instanceof Event)){
+            return false;
+        }
+
+        Event e=(Event)obj;
+
+        return id==e.id && (name!=null?name.equals(e.name):e.name==null);
+    }
 }

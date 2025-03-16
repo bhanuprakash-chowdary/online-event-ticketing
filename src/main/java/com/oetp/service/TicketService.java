@@ -12,22 +12,30 @@ public class TicketService {
     private final Semaphore semaphore=new Semaphore(5);
     private final CyclicBarrier barrier = new CyclicBarrier(5,()->System.out.println("Batch of 5 bookings processed!"));
     private final AtomicInteger batchCounter = new AtomicInteger(0);
+    private final AtomicInteger queuedBookings = new AtomicInteger(0);
+    private final AtomicInteger completedBookings = new AtomicInteger(0);
     //private final ReentrantLock lock=new ReentrantLock();
 
     public TicketService(){
         this.events=new ConcurrentHashMap<>();
     }
 
-    public void addEvent(Event event){
+    public boolean addEvent(Event event){
+        if(events.containsKey(event.getId())){
+            System.out.println("Error: Event ID " + event.getId() + " already exists");
+            return false;
+        }
         events.put(event.getId(),event);
+        return true;
     }
 
     public void listEvents() {
         if (events.isEmpty()) {
             System.out.println("No events available.");
         } else {
-            events.forEach((id, event) ->
-                    System.out.println("ID: " + id + ", Name: " + event.getName() +
+            events.values().stream().
+                    filter(e-> e.getAvailableTickets()>0).
+                    forEach(event -> System.out.println("ID: " + event.getId() + ", Name: " + event.getName() +
                             ", Tickets: " + event.getAvailableTickets()));
         }
     }
@@ -36,12 +44,10 @@ public class TicketService {
         return events.get(id);
     }
 
-    public String bookTicket(String user, int eventId, int quantity) { //synchronize locks whole function
-
-//        return CompletableFuture.supplyAsync(()-> {
+    public CompletableFuture<String> bookTicket(String user, int eventId, int quantity) { //synchronize locks whole function
+        queuedBookings.incrementAndGet();
+        return CompletableFuture.supplyAsync(()-> {
             try {
-                barrier.await();
-                batchCounter.incrementAndGet();
                 semaphore.acquire();//grab a permit (wait if none).
                 Event event = events.get(eventId);
                 if (event != null) {
@@ -49,6 +55,8 @@ public class TicketService {
 
                         try {
                             Thread.sleep(100);
+                            barrier.await();
+                            batchCounter.incrementAndGet();
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                         }
@@ -66,8 +74,24 @@ public class TicketService {
                 Thread.currentThread().interrupt();
                 return user + " booking interrupted";
             }finally {
-                semaphore.release();// Free permit
+                semaphore.release();
+                completedBookings.incrementAndGet();// Free permit
             }
-//        });
+        });
     }
+
+    public Event findEventByName(String name) {
+        return events.values().stream()
+                .filter(event -> event.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public boolean removeEvent(int id) {
+        return events.remove(id) != null;
+    }
+
+    public int getBatchCount() { return batchCounter.get(); }
+    public int getQueuedBookings() { return queuedBookings.get(); }
+    public int getCompletedBookings() { return completedBookings.get(); }
 }
