@@ -57,7 +57,7 @@ public class Main {
                 String user=parts[1];
                 int eventId=Integer.parseInt(parts[2]);
                 int tickets=Integer.parseInt(parts[3]);
-                pool.submit(()-> service.bookTicket(user,eventId,tickets));//Async
+                service.bookTicket(user,eventId,tickets).thenAccept(System.out::println);//Async
                 System.out.println(user + " booking queued...");
 
             }else {

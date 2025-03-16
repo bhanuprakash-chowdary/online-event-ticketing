@@ -2,6 +2,7 @@ package com.oetp.service;
 
 import com.oetp.domain.Event;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
@@ -35,31 +36,33 @@ public class TicketService {
         return events.get(id);
     }
 
-    public void bookTicket(String user,int eventId,int quantity) { //synchronize locks whole function
+    public CompletableFuture<String> bookTicket(String user, int eventId, int quantity) { //synchronize locks whole function
 
-        try {
-            semaphore.acquire();//grab a permit (wait if none).
-            Event event = events.get(eventId);
-            if (event != null) {
-                System.out.println(user + " checking " + quantity + " for " + event.getName() + "( Available at the moment " + event.getAvailableTickets() + ")");
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        return CompletableFuture.supplyAsync(()-> {
+            try {
+                semaphore.acquire();//grab a permit (wait if none).
+                Event event = events.get(eventId);
+                if (event != null) {
+                    if (event.reduceTickets(quantity)) {
+                        try {
+                            Thread.sleep(100);
+                        }catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                        return user + " booked " + quantity + " tickets for " + event.getName() +
+                                ". Remaining: " + event.getAvailableTickets();
+                    }
+
+                    return user + " failed - not enough tickets for " + event.getName();
                 }
-                if (event.reduceTickets(quantity)) {
-                    System.out.println(user + " booked " + quantity + ". Remaining: " + event.getAvailableTickets());
-                } else {
-                    System.out.println(user + " failed - not enough tickets.");
-                }
-            } else {
-                System.out.println("Event not found: " + eventId);
+                return "Event not found: " + eventId;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return user + " booking interrupted";
+            } finally {
+                semaphore.release();// Free permit
             }
-        }catch (InterruptedException e){
-            Thread.currentThread().interrupt();
-        }finally {
-            semaphore.release();// Free permit
-        }
+        });
 
 //            lock.lock();//lock only reduceTickets method (not whole method including sleep )
 //            try {
