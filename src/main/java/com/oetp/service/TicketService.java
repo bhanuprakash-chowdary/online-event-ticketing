@@ -2,18 +2,38 @@ package com.oetp.service;
 
 import com.oetp.domain.Event;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class TicketService {
 
-    private final Event event;
+    private final ConcurrentHashMap<Integer, Event> events;
     private final ReentrantLock lock=new ReentrantLock();
 
-    public TicketService(Event event){
-        this.event=event;
+    public TicketService(){
+        this.events=new ConcurrentHashMap<>();
     }
 
-    public void bookTicket(String user,int quantity) { //synchronize locks whole function
+    public void addEvent(Event event){
+        events.put(event.getId(),event);
+    }
+
+    public void listEvents() {
+        if (events.isEmpty()) {
+            System.out.println("No events available.");
+        } else {
+            events.forEach((id, event) ->
+                    System.out.println("ID: " + id + ", Name: " + event.getName() +
+                            ", Tickets: " + event.getAvailableTickets()));
+        }
+    }
+
+    public Event getEvent(int id) {
+        return events.get(id);
+    }
+
+    public void bookTicket(String user,int eventId,int quantity) { //synchronize locks whole function
+        Event event = events.get(eventId);
         System.out.println(user + " checking " + quantity + " for " + event.getName() + "( Available at the moment " + event.getAvailableTickets() + ")");
         try {
             Thread.sleep(100);
