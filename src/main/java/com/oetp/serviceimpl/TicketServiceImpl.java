@@ -2,38 +2,32 @@ package com.oetp.serviceimpl;
 
 import com.oetp.domain.Event;
 import com.oetp.service.TicketService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import java.util.Collection;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TicketServiceImpl implements TicketService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(TicketServiceImpl.class);
     private final ConcurrentHashMap<Integer, Event> events = new ConcurrentHashMap<>();
-    private final ExecutorService executor;
     private final Semaphore semaphore;
-    
-    private final CyclicBarrier barrier = new CyclicBarrier(5, () -> 
-    System.out.println("Batch of 5 bookings processed!"));
-    
     private final AtomicInteger batchCounter = new AtomicInteger(0);
+	private Executor executor;
     
-    private final ThreadLocal<String> currentUser = new ThreadLocal<>();
     
     @Autowired
-    public TicketServiceImpl(ExecutorService executor, Semaphore semaphore) {
+    public TicketServiceImpl(@Qualifier("bookingExecutor") Executor executor, Semaphore semaphore) {
     	this.executor = executor;
         this.semaphore = semaphore;
     }
@@ -50,39 +44,31 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     @Async
-	public CompletableFuture<String> bookTicket(String user, int eventId, int quantity) {
-    	currentUser.set(user);
-		return CompletableFuture.supplyAsync(() -> {
-			try {
-				semaphore.acquire();
-				Event event = events.get(eventId);
-				if (event == null)
-					throw new IllegalArgumentException("Event not found: " + eventId);
-				if (!event.reduceTickets(quantity))
-					throw new IllegalStateException("Not enough tickets");
-				
-				barrier.await();
-				
-				String result = currentUser.get() + " booked " + quantity + " for " + event.getName();
-				int count = batchCounter.incrementAndGet();
-				logger.info("Booking success: {}", result);
+    @Transactional// Vaults/ropes/locksResources
+    public CompletableFuture<String> bookTicket(String user, int eventId, int quantity) {
+    	return CompletableFuture.supplyAsync(() -> {
+            try {
+                semaphore.acquire();
+                Event event = events.get(eventId);
+                if (event == null) throw new IllegalArgumentException("Event not found: " + eventId);
+                Thread.sleep(1000);
+                if (!event.reduceTickets(quantity)) throw new IllegalStateException("Not enough tickets");
+                String result = user + " booked " + quantity + " for " + event.getName();
+                logger.info("Booking success: {}", result);
+                int count = batchCounter.incrementAndGet();
                 if (count % 5 == 0) {
-                	logger.info("Batch of 5 bookings processed! Total: {}", count);
+                    logger.info("Batch of 5 bookings processed! Total: {}", count);
                 }
-                
-				return result;
-
-			} catch (InterruptedException | BrokenBarrierException e) {
-				logger.error("Booking interrupted for user: {}", currentUser.get(), e);
-				Thread.currentThread().interrupt();
-				throw new RuntimeException("Booking interrupted");
-			} finally {
-				semaphore.release();
-				currentUser.remove();
-			}
-
-		},executor);//run on executor pool(defined), not commonPool.
-	}
+                return result;
+            } catch (InterruptedException e) {
+                logger.error("Booking interrupted for user: {}", user, e);
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Booking interrupted");
+            } finally {
+                semaphore.release();
+            }
+        }, executor);
+    }
 
     @Override
     public Collection<Event> getEvents(){

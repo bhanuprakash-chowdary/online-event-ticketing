@@ -1,0 +1,57 @@
+2025-03-21 01:33:08 INFO  c.o.OnlineEventTicketingApplication - Starting OnlineEventTicketingApplication using Java 17.0.6 with PID 8219 (/Users/credr/Documents/online-event-ticketing/target/classes started by credr in /Users/credr/Documents/online-event-ticketing)
+2025-03-21 01:33:08 INFO  c.o.OnlineEventTicketingApplication - No active profile set, falling back to 1 default profile: "default"
+2025-03-21 01:33:08 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-03-21 01:33:08 INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-03-21 01:33:08 INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-03-21 01:33:08 INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.36]
+2025-03-21 01:33:08 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-03-21 01:33:08 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 597 ms
+2025-03-21 01:33:08 WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'ticketController' defined in file [/Users/credr/Documents/online-event-ticketing/target/classes/com/oetp/controller/TicketController.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'ticketServiceImpl' defined in file [/Users/credr/Documents/online-event-ticketing/target/classes/com/oetp/serviceimpl/TicketServiceImpl.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'java.util.concurrent.ExecutorService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+2025-03-21 01:33:08 INFO  o.a.catalina.core.StandardService - Stopping service [Tomcat]
+2025-03-21 01:33:08 INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-03-21 01:33:08 ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.oetp.serviceimpl.TicketServiceImpl required a bean of type 'java.util.concurrent.ExecutorService' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'java.util.concurrent.ExecutorService' in your configuration.
+
+2025-03-21 01:33:49 INFO  c.o.OnlineEventTicketingApplication - Starting OnlineEventTicketingApplication using Java 17.0.6 with PID 8230 (/Users/credr/Documents/online-event-ticketing/target/classes started by credr in /Users/credr/Documents/online-event-ticketing)
+2025-03-21 01:33:49 INFO  c.o.OnlineEventTicketingApplication - No active profile set, falling back to 1 default profile: "default"
+2025-03-21 01:33:50 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-03-21 01:33:50 INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-03-21 01:33:50 INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-03-21 01:33:50 INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.36]
+2025-03-21 01:33:50 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-03-21 01:33:50 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 520 ms
+2025-03-21 01:33:50 INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2025-03-21 01:33:50 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-03-21 01:33:50 INFO  c.o.OnlineEventTicketingApplication - Started OnlineEventTicketingApplication in 1.079 seconds (process running for 1.412)
+2025-03-21 01:33:54 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-03-21 01:33:54 INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-03-21 01:33:54 INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2025-03-21 01:33:54 INFO  c.oetp.serviceimpl.TicketServiceImpl - Booking success: Bhanuprakash Chowdary booked 30 for Cold Play
+2025-03-21 01:33:57 INFO  c.oetp.serviceimpl.TicketServiceImpl - Booking success: Bhanuprakash Chowdary booked 30 for Cold Play
+2025-03-21 01:33:58 INFO  c.oetp.serviceimpl.TicketServiceImpl - Booking success: Bhanuprakash Chowdary booked 30 for Cold Play
+2025-03-21 01:33:59 ERROR c.oetp.serviceimpl.TicketServiceImpl - Booking failed for user: Bhanuprakash Chowdary
+java.util.concurrent.CompletionException: java.lang.IllegalStateException: Not enough tickets
+	at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:315)
+	at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:320)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1770)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+Caused by: java.lang.IllegalStateException: Not enough tickets
+	at com.oetp.serviceimpl.TicketServiceImpl.lambda$0(TicketServiceImpl.java:53)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	... 3 common frames omitted
