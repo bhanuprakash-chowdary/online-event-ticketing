@@ -3,7 +3,7 @@ package com.oetp.domain;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Event {
-    private final int id;
+    private int id;
     private final String name;
     private AtomicInteger availableTickets;
 
@@ -24,6 +24,10 @@ public class Event {
     public int getAvailableTickets() {
         return availableTickets.get();
     }
+    
+    public void setId(int id) {
+		this.id = id;
+	}
 
     public boolean reduceTickets(int quantity){
         int current;

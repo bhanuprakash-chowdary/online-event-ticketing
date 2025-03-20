@@ -14,4 +14,6 @@ public interface TicketService {
     public Collection<Event> getEvents();
 
     public CompletableFuture<String> bookTicket(String user, int id, int quantity);
+
+	public void removeEvent(int id);
 }
