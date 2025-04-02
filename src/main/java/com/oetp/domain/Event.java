@@ -1,8 +1,13 @@
 package com.oetp.domain;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
+@Entity
 public class Event {
+	
+	@Id
     private int id;
     private final String name;
     private AtomicInteger availableTickets;

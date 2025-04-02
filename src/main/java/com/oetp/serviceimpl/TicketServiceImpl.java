@@ -1,16 +1,17 @@
 package com.oetp.serviceimpl;
 
+import com.oetp.dao.TicketRepository;
 import com.oetp.domain.Event;
 import com.oetp.service.TicketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,28 +21,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class TicketServiceImpl implements TicketService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(TicketServiceImpl.class);
-    private final ConcurrentHashMap<Integer, Event> events = new ConcurrentHashMap<>();
+	private final TicketRepository ticketRepository;
     private final Semaphore semaphore;
     private final AtomicInteger batchCounter = new AtomicInteger(0);
 	private Executor executor;
     
     
     @Autowired
-    public TicketServiceImpl(@Qualifier("bookingExecutor") Executor executor, Semaphore semaphore) {
+    public TicketServiceImpl(TicketRepository repository,@Qualifier("bookingExecutor") Executor executor, Semaphore semaphore) {
+    	ticketRepository=repository;
     	this.executor = executor;
         this.semaphore = semaphore;
     }
     
-    @Override
-    public void addEvent(Event event) {
-        events.put(event.getId(), event);
-    }
-
-    @Override
-    public Event getEvent(int id) {
-        return events.get(id);
-    }
-
     @Override
     @Async
     @Transactional// Vaults/ropes/locksResources
@@ -49,10 +41,10 @@ public class TicketServiceImpl implements TicketService {
     	return CompletableFuture.supplyAsync(() -> {
             try {
                 semaphore.acquire();
-                Event event = events.get(eventId);
-                if (event == null) throw new IllegalArgumentException("Event not found: " + eventId);
-                Thread.sleep(1000);
+                Event event = ticketRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event not found: " + eventId));
                 if (!event.reduceTickets(quantity)) throw new IllegalStateException("Not enough tickets");
+                ticketRepository.save(event);
+                
                 String result = user + " booked " + quantity + " for " + event.getName();
                 logger.info("Booking success: {}", result);
                 int count = batchCounter.incrementAndGet();
@@ -69,16 +61,26 @@ public class TicketServiceImpl implements TicketService {
             }
         }, executor);
     }
+    
+    @Override
+    public void addEvent(Event event) {
+        ticketRepository.save(event);
+    }
 
     @Override
-    public Collection<Event> getEvents(){
-        return events.values();
+    @Cacheable(value = "events", key = "#id")
+    public Event getEvent(int id) {
+    	logger.info("Fetching event {} from DB", id);
+        return ticketRepository.findById(id).orElse(null);
+    }
+    
+    @Override
+    public List<Event> getEvents(){
+        return ticketRepository.findAll();
     }
     
     @Override
     public void removeEvent(int id) {
-    	if(events.remove(id)==null) {
-    		throw new IllegalArgumentException("Event not found: " + id);
-    	}
+    	ticketRepository.deleteById(id);
     }
 }

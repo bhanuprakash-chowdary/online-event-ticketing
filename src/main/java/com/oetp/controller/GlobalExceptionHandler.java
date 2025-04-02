@@ -32,4 +32,8 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+//    @ExceptionHandler(RateLimiterException.class)
+//    public ResponseEntity<String> handleRateLimit(RateLimiterException e) {
+//        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Slow down! Limit: 5/min");
+//    }
 }

@@ -2,7 +2,9 @@ package com.oetp.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
+@Data
 public class BookRequest {
 
 	@NotBlank(message="User Name cannot be blank")
@@ -10,6 +12,8 @@ public class BookRequest {
 	
 	@Min(value=1, message = "Quantity must be at least 1")
 	private int quantity;
+	
+	private int eventId;
 	
 	public BookRequest() {
 		
