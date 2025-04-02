@@ -1,48 +1,33 @@
 package com.oetp.domain;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import lombok.Data;
 
 @Entity
+@Data
 public class Event {
 	
 	@Id
     private int id;
-    private final String name;
-    private AtomicInteger availableTickets;
+    private String name;
+    private int availableTickets;
 
+    public Event() {}
     public Event(int id, String name, int availableTickets) {
         this.id = id;
         this.name = name;
-        this.availableTickets = new AtomicInteger(availableTickets);
+        this.availableTickets = availableTickets;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getAvailableTickets() {
-        return availableTickets.get();
-    }
-    
-    public void setId(int id) {
-		this.id = id;
-	}
-
-    public boolean reduceTickets(int quantity){
-        int current;
-        do{
-            current = availableTickets.get();
-            if(current<quantity){
-                return false;
-            }
-        }while(!availableTickets.compareAndSet(current,current-quantity));
-        return true;
+    public boolean reduceTickets(int quantity) {
+        if (availableTickets >= quantity) {
+            availableTickets -= quantity;
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -60,15 +45,10 @@ public class Event {
             return true;
         }
 
-        if(! (obj instanceof Event)){
+        if(! (obj instanceof Event e)){
             return false;
         }
 
-        Event e=(Event)obj;
-
-        return id==e.id && (name!=null?name.equals(e.name):e.name==null);
+        return id==e.id && (Objects.equals(name, e.name));
     }
-
-    // Add getters for JSON (Spring needs them)
-    public int getAvailableTicketsValue() { return availableTickets.get(); }
 }

@@ -75,6 +75,7 @@ public class TicketController {
     }
     
     @PostMapping("/batch-book")
+    @RateLimiter(name = "booking")
     public CompletableFuture<ResponseEntity<String>> batchBookTickets(@Valid @RequestBody List<BookRequest> requests) {
         List<CompletableFuture<String>> futures = requests.stream()
                 .map(req -> ticketService.bookTicket(req.getUser(), req.getEventId(), req.getQuantity()))
