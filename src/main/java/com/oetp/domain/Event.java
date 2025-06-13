@@ -1,5 +1,6 @@
 package com.oetp.domain;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.persistence.Entity;
@@ -8,7 +9,7 @@ import lombok.Data;
 
 @Entity
 @Data
-public class Event {
+public class Event implements Serializable {
 	
 	@Id
     private int id;

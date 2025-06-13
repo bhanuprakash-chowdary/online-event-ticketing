@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class TicketServiceImpl implements TicketService {
 	private final TicketRepository ticketRepository;
     private final Semaphore semaphore;
     private final AtomicInteger batchCounter = new AtomicInteger(0);
-	private Executor executor;
+	private final Executor executor;
     
     
     @Autowired
@@ -37,6 +38,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     @Async
     @Transactional// Vaults/ropes/locksResources
+    @CacheEvict(value = "events", key = "#eventId")
     public CompletableFuture<String> bookTicket(String user, int eventId, int quantity) {
     	return CompletableFuture.supplyAsync(() -> {
             try {
