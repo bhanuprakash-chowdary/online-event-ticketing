@@ -32,6 +32,7 @@ public class TicketController {
     }
 
     @GetMapping
+    @Cacheable(value = "eventsList", key = "'page' + #page + '_size' + #size + '_name' + #name + '_sort' + #sort")
     public ResponseEntity<List<Event>> listEvents(
     		@RequestParam(defaultValue="0") int page,
     		@RequestParam(defaultValue="10")int size,
