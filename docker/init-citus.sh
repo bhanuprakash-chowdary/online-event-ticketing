@@ -36,7 +36,7 @@ psql -U postgres <<-'EOSQL'
   DO $$
   BEGIN
       IF NOT EXISTS (SELECT 1 FROM event) THEN
-          INSERT INTO event (name, available_tickets) VALUES
+          INSERT INTO event (name, available_tickets) VALUES 
               ('Rock Concert', 1000),
               ('Jazz Night', 500);
       END IF;

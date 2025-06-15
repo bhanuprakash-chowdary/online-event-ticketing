@@ -14,7 +14,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @EnableAsync
-@EnableCaching
 public class Appconfig implements AsyncConfigurer {
 
 	

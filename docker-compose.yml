@@ -28,8 +28,6 @@ services:
       - SPRING_CACHE_TYPE=redis
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
-      - SPRING_REDIS_TIMEOUT=2000
-      - SPRING_REDIS_CONNECTION_MAX_ATTEMPTS=5
       - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
@@ -43,7 +41,7 @@ services:
     networks:
       - oetp-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -65,8 +63,6 @@ services:
       - SPRING_CACHE_TYPE=redis
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
-      - SPRING_REDIS_TIMEOUT=2000
-      - SPRING_REDIS_CONNECTION_MAX_ATTEMPTS=5
       - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
@@ -80,7 +76,7 @@ services:
     networks:
       - oetp-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -139,13 +135,13 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+    networks:
+      - oetp-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 5
-    networks:
-      - oetp-network
 
 volumes:
   citus-coordinator-data:

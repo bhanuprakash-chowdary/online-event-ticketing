@@ -9,11 +9,13 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
 @Table(name = "event")
 @Data
 public class Event implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
