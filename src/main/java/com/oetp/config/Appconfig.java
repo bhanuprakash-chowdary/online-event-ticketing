@@ -1,11 +1,7 @@
 package com.oetp.config;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Semaphore;
-
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
@@ -15,19 +11,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Configuration
 @EnableAsync
 public class Appconfig implements AsyncConfigurer {
-
-	
-//	@Bean(name = "bookingExecutor")
-//	private Executor bookingExecutor() {
-//		return Executors.newVirtualThreadPerTaskExecutor();
-//	}
-//	
-	
-//	@Bean(name = "bookingExecutor")
-//	private Executor bookingExecutor() {
-//		return new ForkJoinPool(5,ForkJoinPool.defaultForkJoinWorkerThreadFactory,null,true);
-//	}
-	
 	
 	@Bean(name = "bookingExecutor")
     public Executor bookingExecutor() {

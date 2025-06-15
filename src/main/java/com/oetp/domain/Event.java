@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -28,12 +28,22 @@ public class Event implements Serializable {
     @Column(name = "available_tickets")
     private int availableTickets;
 
+    @Column(name = "event_date")
+    private LocalDateTime eventDate;
+
+    private String location;
+
+    private String category;
+
     public Event() {}
 
-    public Event(int id, String name, int availableTickets) {
+    public Event(int id, String name, int availableTickets, LocalDateTime eventDate, String location, String category) {
         this.id = id;
         this.name = name;
         this.availableTickets = availableTickets;
+        this.eventDate = eventDate;
+        this.location = location;
+        this.category = category;
     }
 
     public boolean reduceTickets(int quantity) {

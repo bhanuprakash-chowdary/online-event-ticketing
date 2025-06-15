@@ -25,10 +25,10 @@ services:
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
-      - SPRING_CACHE_TYPE=redis
+#      - SPRING_CACHE_TYPE=redis
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
-      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
+#      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
       - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_FOR_PERIOD=100
@@ -36,8 +36,8 @@ services:
     depends_on:
       citus-coordinator:
         condition: service_started
-      redis:
-        condition: service_healthy
+#      redis:
+#        condition: service_healthy
     networks:
       - oetp-network
     healthcheck:
@@ -60,10 +60,10 @@ services:
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
-      - SPRING_CACHE_TYPE=redis
+#      - SPRING_CACHE_TYPE=redis
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
-      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
+#      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
       - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_FOR_PERIOD=100
@@ -71,8 +71,8 @@ services:
     depends_on:
       citus-coordinator:
         condition: service_started
-      redis:
-        condition: service_healthy
+#      redis:
+#        condition: service_healthy
     networks:
       - oetp-network
     healthcheck:
@@ -131,17 +131,40 @@ services:
     networks:
       - oetp-network
 
-  redis:
-    image: redis:latest
+#  redis:
+#    image: redis:7.4.0
+#    ports:
+#      - "6379:6379"
+##    volumes:
+##      - redis-data:/data
+#    networks:
+#      - oetp-network
+#    healthcheck:
+#      test: [ "CMD", "redis-cli", "ping" ]
+#      interval: 5s
+#      timeout: 3s
+#      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
     ports:
-      - "6379:6379"
-    networks:
-      - oetp-network
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+    kafka:
+      image: confluentinc/cp-kafka:latest
+      ports:
+        - "9092:9092"
+      depends_on:
+        - zookeeper
+      environment:
+        KAFKA_BROKER_ID: 1
+        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
 
 volumes:
   citus-coordinator-data:

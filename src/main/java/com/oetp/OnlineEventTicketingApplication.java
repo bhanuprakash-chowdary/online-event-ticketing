@@ -8,15 +8,14 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
-@EnableCaching
 public class OnlineEventTicketingApplication {
 
 	public static void main(String[] args) {
 
 		ApplicationContext context=SpringApplication.run(OnlineEventTicketingApplication.class, args);
-		EventService service=context.getBean(EventService.class);
-		service.addEvent(new Event(1,"Cold Play",100));
-		service.addEvent(new Event(2,"Pop Fest",100));
+//		EventService service=context.getBean(EventService.class);
+//		service.addEvent(new Event(1,"Cold Play",100));
+//		service.addEvent(new Event(2,"Pop Fest",100));
 
 	}
 
