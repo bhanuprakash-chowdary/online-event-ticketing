@@ -2,12 +2,13 @@ package com.oetp.controller;
 
 import com.oetp.domain.Event;
 import com.oetp.dto.BookRequest;
-import com.oetp.service.TicketService;
+import com.oetp.service.EventService;
 
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,26 +23,26 @@ import java.util.stream.Collectors;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
-@RequestMapping("/events")
-public class TicketController {
-    private final TicketService ticketService;
+@RequestMapping("/v1/events")
+public class EventController {
+    private final EventService eventService;
 
     @Autowired
-    public TicketController(TicketService ticketService) {
-        this.ticketService = ticketService;
+    public EventController(EventService eventService) {
+        this.eventService = eventService;
     }
 
     @GetMapping
-    @Cacheable(value = "eventsList", key = "'page' + #page + '_size' + #size + '_name' + #name + '_sort' + #sort")
+    @Cacheable(value = "eventCache", key = "'allEvents'")
     public ResponseEntity<List<Event>> listEvents(
     		@RequestParam(defaultValue="0") int page,
     		@RequestParam(defaultValue="10")int size,
     		@RequestParam(required=false) String name,
 			@RequestParam(required = false, defaultValue = "id") String sort) {
 
-		List<Event> allEvents = name != null && !name.isBlank() ? allEvents = ticketService.getEvents().stream()
+		List<Event> allEvents = name != null && !name.isBlank() ? allEvents = eventService.getEvents().stream()
 				.filter(e -> e.getName().equalsIgnoreCase(name)).collect(Collectors.toList())
-				: ticketService.getEvents();
+				: eventService.getEvents();
 
 
 		Comparator<Event>  comparator= sort.equalsIgnoreCase("name")
@@ -96,7 +97,7 @@ public class TicketController {
 
     @PostMapping
     public Event addEvent(@RequestBody Event event) {
-    	 ticketService.addEvent(event);
+    	 eventService.addEvent(event);
     	 return event;
     }
 
@@ -108,11 +109,11 @@ public class TicketController {
                                                                              ) {
 
 //        String user = principal.getAttribute("email");
-        return ticketService.bookTicket(request.getUser(), id,request.getQuantity()).
+        return eventService.bookTicket(request.getUser(), id,request.getQuantity()).
         		thenApply(result-> {
         			ResponseEntity<String> response = ResponseEntity.ok(result);
-        			return EntityModel.of(response, linkTo(methodOn(TicketController.class).getEvent(id)).withRel("event"),
-                            linkTo(methodOn(TicketController.class).listEvents(0,10,null,"id")).withRel("all-events"));
+        			return EntityModel.of(response, linkTo(methodOn(EventController.class).getEvent(id)).withRel("event"),
+                            linkTo(methodOn(EventController.class).listEvents(0,10,null,"id")).withRel("all-events"));
         		});
     }
     
@@ -120,7 +121,7 @@ public class TicketController {
     @RateLimiter(name = "booking")
     public CompletableFuture<ResponseEntity<String>> batchBookTickets(@Valid @RequestBody List<BookRequest> requests) {
         List<CompletableFuture<String>> futures = requests.stream()
-                .map(req -> ticketService.bookTicket(req.getUser(), req.getEventId(), req.getQuantity()))
+                .map(req -> eventService.bookTicket(req.getUser(), req.getEventId(), req.getQuantity()))
                 .toList();
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
@@ -135,31 +136,31 @@ public class TicketController {
     
     @GetMapping("/{id}")
     public EntityModel<Event> getEvent(@PathVariable int id) {
-        Event event = ticketService.getEvent(id);
+        Event event = eventService.getEvent(id);
         if (event == null) throw new IllegalArgumentException("Event not found: " + id);
         return EntityModel.of(event,
-                linkTo(methodOn(TicketController.class).getEvent(id)).withSelfRel(),
-                linkTo(methodOn(TicketController.class).listEvents(0,10,null,"id")).withRel("all-events"));
+                linkTo(methodOn(EventController.class).getEvent(id)).withSelfRel(),
+                linkTo(methodOn(EventController.class).listEvents(0,10,null,"id")).withRel("all-events"));
     } 
     
     @PutMapping("/{id}")
     public ResponseEntity<Event> updateEvent(@PathVariable int id,@RequestBody Event updatedEvent){
-    	if(ticketService.getEvent(id)==null) {
+    	if(eventService.getEvent(id)==null) {
     		throw new IllegalArgumentException("Event not found: " + id);
     	}
     	
     	updatedEvent.setId(id);
     	
-    	ticketService.addEvent(updatedEvent);
+    	eventService.addEvent(updatedEvent);
     	return ResponseEntity.ok(updatedEvent);
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEvent(@PathVariable int id){
-    	if(ticketService.getEvent(id)==null) {
+    	if(eventService.getEvent(id)==null) {
     		return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     	}
-    	ticketService.removeEvent(id);
+    	eventService.removeEvent(id);
     	return ResponseEntity.noContent().build();
     }
 }

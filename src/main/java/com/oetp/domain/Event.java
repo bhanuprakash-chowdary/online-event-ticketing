@@ -1,22 +1,33 @@
 package com.oetp.domain;
 
-import java.io.Serializable;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import jakarta.persistence.*;
 import lombok.Data;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Objects;
+
 @Entity
+@Table(name = "event")
 @Data
 public class Event implements Serializable {
-	
-	@Id
+
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @SequenceGenerator(name = "event_seq", sequenceName = "event_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_seq")
     private int id;
+
     private String name;
+
+    @Column(name = "available_tickets")
     private int availableTickets;
 
     public Event() {}
+
     public Event(int id, String name, int availableTickets) {
         this.id = id;
         this.name = name;
@@ -33,23 +44,15 @@ public class Event implements Serializable {
 
     @Override
     public int hashCode() {
-//        return name != null ? name.hashCode() : 0;
-        int result = id; // Simple base
-        result = 31 * result + (name != null ? name.hashCode() : 0); // Mix in name
+        int result = id;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-
-        if(this==obj){
-            return true;
-        }
-
-        if(! (obj instanceof Event e)){
-            return false;
-        }
-
-        return id==e.id && (Objects.equals(name, e.name));
+        if (this == obj) return true;
+        if (!(obj instanceof Event e)) return false;
+        return id == e.id && Objects.equals(name, e.name);
     }
 }

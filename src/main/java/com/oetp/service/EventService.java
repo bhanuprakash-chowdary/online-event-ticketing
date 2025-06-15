@@ -1,11 +1,11 @@
 package com.oetp.service;
 
 import com.oetp.domain.Event;
-import java.util.Collection;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public interface TicketService {
+public interface EventService {
 
     public void addEvent(Event event);
 

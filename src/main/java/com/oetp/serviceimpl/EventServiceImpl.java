@@ -1,8 +1,8 @@
 package com.oetp.serviceimpl;
 
-import com.oetp.dao.TicketRepository;
+import com.oetp.dao.EventRepository;
 import com.oetp.domain.Event;
-import com.oetp.service.TicketService;
+import com.oetp.service.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +19,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class TicketServiceImpl implements TicketService {
+public class EventServiceImpl implements EventService {
 	
-	private static final Logger logger = LoggerFactory.getLogger(TicketServiceImpl.class);
-	private final TicketRepository ticketRepository;
+	private static final Logger logger = LoggerFactory.getLogger(EventServiceImpl.class);
+	private final EventRepository ticketRepository;
     private final Semaphore semaphore;
     private final AtomicInteger batchCounter = new AtomicInteger(0);
 	private final Executor executor;
     
     
     @Autowired
-    public TicketServiceImpl(TicketRepository repository,@Qualifier("bookingExecutor") Executor executor, Semaphore semaphore) {
+    public EventServiceImpl(EventRepository repository, @Qualifier("bookingExecutor") Executor executor, Semaphore semaphore) {
     	ticketRepository=repository;
     	this.executor = executor;
         this.semaphore = semaphore;
