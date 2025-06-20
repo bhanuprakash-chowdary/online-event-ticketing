@@ -32,11 +32,7 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
         logger.debug("Request URI: {}", requestURI);
-        if (requestURI.startsWith("/auth/") || requestURI.equals("/actuator/health")) {
-            logger.debug("Skipping JWT filter for: {}", requestURI);
-            chain.doFilter(request, response);
-            return;
-        }
+        logger.info("Remote IP: {}, X-Real-IP: {}", request.getRemoteAddr(), request.getHeader("X-Real-IP"));
 
         String authHeader = request.getHeader("Authorization");
         logger.debug("Authorization header: {}", authHeader);
@@ -67,6 +63,8 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/auth/") || path.equals("/actuator/health");
+        boolean shouldSkip = path.startsWith("/auth/") || path.startsWith("/actuator/");
+        logger.debug("shouldNotFilter for path {}: {}", path, shouldSkip);
+        return shouldSkip;
     }
 }

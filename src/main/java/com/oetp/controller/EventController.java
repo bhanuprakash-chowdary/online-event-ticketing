@@ -89,6 +89,14 @@ public class EventController {
         });
     }
 
+    @PostMapping("/{id}/v1/book")
+    @RateLimiter(name = "booking")
+    public CompletableFuture<String> bookTicketV1(@PathVariable int id,
+                                                              @Valid @RequestBody BookRequest request) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        return eventService.bookTicket(userEmail, id, request.getQuantity());
+    }
+
     @PostMapping("/batch-book")
     @RateLimiter(name = "booking")
     public CompletableFuture<ResponseEntity<String>> batchBookTickets(@Valid @RequestBody List<BookRequest> requests) {

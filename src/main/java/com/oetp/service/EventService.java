@@ -26,7 +26,7 @@ public interface EventService {
 
     Booking createBooking(String userEmail, int eventId, int quantity);
 
-    CompletableFuture<String> bookTicketSync(String userEmail, int eventId, int quantity);
+    void bookTicketSync(String userEmail, int eventId, int quantity);
 
     Page<Event> findByCategory(String category, Pageable pageable);
 

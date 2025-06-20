@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -55,9 +57,8 @@ public class EventServiceImpl implements EventService {
     @Override
     @Async
     @Transactional// Vaults/ropes/locksResources
-//    @CacheEvict(value = "eventCache", key = "#eventId")
-    public CompletableFuture<String> bookTicketSync(String user, int eventId, int quantity) {
-    	return CompletableFuture.supplyAsync(() -> {
+    @CacheEvict(value = "eventCache", key = "#eventId")
+    public void bookTicketSync(String user, int eventId, int quantity) {
             try {
                 semaphore.acquire();
                 Booking booking = createBooking(user, eventId, quantity);
@@ -67,7 +68,6 @@ public class EventServiceImpl implements EventService {
                 if (count % 5 == 0) {
                     logger.info("Batch of 5 bookings processed! Total: {}", count);
                 }
-                return result;
             } catch (InterruptedException e) {
                 logger.error("Booking interrupted for user: {}", user, e);
                 Thread.currentThread().interrupt();
@@ -75,7 +75,6 @@ public class EventServiceImpl implements EventService {
             } finally {
                 semaphore.release();
             }
-        }, executor);
     }
 
     @Override
@@ -100,14 +99,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-//    @Cacheable(value = "eventCache", key = "#id")
+    @Cacheable(value = "eventCache", key = "#id")
     public Event getEvent(int id) {
     	logger.info("Fetching event {} from DB", id);
         return eventRepository.findById(id).orElse(null);
     }
 
     @Override
-//    @Cacheable(value = "eventCache", key = "'allEvents'")
+    @Cacheable(value = "eventCache", key = "'allEvents'")
     public List<Event> getEvents(){
         logger.info("Fetching events from DB");
         return eventRepository.findAll();

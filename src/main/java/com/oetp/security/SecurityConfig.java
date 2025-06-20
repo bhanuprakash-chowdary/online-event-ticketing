@@ -1,10 +1,13 @@
 package com.oetp.security;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,6 +20,7 @@ import org.springframework.security.config.Customizer;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class SecurityConfig {
 
     @Autowired
@@ -25,19 +29,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Explicitly disable CSRF
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/**", "/actuator/health").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/events").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/v1/events/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/v1/events/**").hasRole("ADMIN")
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/v1/events").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/v1/events/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/v1/events/**").hasRole("ADMIN")
                         .requestMatchers("/v1/events/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, e) -> {
+                            log.error("Authentication error for {}: {}", req.getRequestURI(), e.getMessage());
+                            res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        })
+                );
         return http.build();
     }
 

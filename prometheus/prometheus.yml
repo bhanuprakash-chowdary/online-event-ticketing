@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'oetp'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+          - 'oetp-app1:8081'
+          - 'oetp-app2:8082'
+          - 'oetp-app3:8083'
+          - 'oetp-app4:8084'
+          - 'oetp-app5:8085'
+        labels:
+          application: 'oetp'
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']
+        labels:
+          application: 'prometheus'

@@ -8,6 +8,9 @@ services:
     depends_on:
       - oetp-app1
       - oetp-app2
+      - oetp-app3
+      - oetp-app4
+      - oetp-app5
     networks:
       - oetp-network
 
@@ -20,24 +23,31 @@ services:
       - "8081:8081"
     environment:
       - SERVER_PORT=8081
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://citus-coordinator:5432/postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://citus-coordinator:5432/oetp
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
-#      - SPRING_CACHE_TYPE=redis
+      - SPRING_CACHE_TYPE=redis
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
-#      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
-      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health
+      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
       - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_FOR_PERIOD=100
       - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_REFRESH_PERIOD=1s
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,prometheus,info,metrics
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_AUTHENTICATED=false
+    volumes:
+      - ./src/main/resources/application.properties:/app/config/application.properties
     depends_on:
       citus-coordinator:
         condition: service_started
-#      redis:
-#        condition: service_healthy
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_healthy
     networks:
       - oetp-network
     healthcheck:
@@ -45,6 +55,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   oetp-app2:
     build:
@@ -55,24 +69,31 @@ services:
       - "8082:8082"
     environment:
       - SERVER_PORT=8082
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://citus-coordinator:5432/postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://citus-coordinator:5432/oetp
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
-#      - SPRING_CACHE_TYPE=redis
+      - SPRING_CACHE_TYPE=redis
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
-#      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
-      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health
+      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
       - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_FOR_PERIOD=100
       - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_REFRESH_PERIOD=1s
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,prometheus,info,metrics
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_AUTHENTICATED=false
+    volumes:
+      - ./src/main/resources/application.properties:/app/config/application.properties
     depends_on:
       citus-coordinator:
         condition: service_started
-#      redis:
-#        condition: service_healthy
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_healthy
     networks:
       - oetp-network
     healthcheck:
@@ -80,6 +101,148 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  oetp-app3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: oetp:2.0-alpha
+    ports:
+      - "8083:8083"
+    environment:
+      - SERVER_PORT=8083
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://citus-coordinator:5432/oetp
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_CACHE_TYPE=redis
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_FOR_PERIOD=100
+      - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_REFRESH_PERIOD=1s
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,prometheus,info,metrics
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_AUTHENTICATED=false
+    volumes:
+      - ./src/main/resources/application.properties:/app/config/application.properties
+    depends_on:
+      citus-coordinator:
+        condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - oetp-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8083/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  oetp-app4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: oetp:2.0-alpha
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVER_PORT=8084
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://citus-coordinator:5432/oetp
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_CACHE_TYPE=redis
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_FOR_PERIOD=100
+      - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_REFRESH_PERIOD=1s
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,prometheus,info,metrics
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_AUTHENTICATED=false
+    volumes:
+      - ./src/main/resources/application.properties:/app/config/application.properties
+    depends_on:
+      citus-coordinator:
+        condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - oetp-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  oetp-app5:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: oetp:2.0-alpha
+    ports:
+      - "8085:8085"
+    environment:
+      - SERVER_PORT=8085
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://citus-coordinator:5432/oetp
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_CACHE_TYPE=redis
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_CACHE_REDIS_TIME_TO_LIVE=600000
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_FOR_PERIOD=100
+      - RESILIENCE4J_RATELIMITER_INSTANCES_BOOKING_LIMIT_REFRESH_PERIOD=1s
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,prometheus,info,metrics
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_AUTHENTICATED=false
+    volumes:
+      - ./src/main/resources/application.properties:/app/config/application.properties
+    depends_on:
+      citus-coordinator:
+        condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - oetp-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8085/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   citus-coordinator:
     image: citusdata/citus:12.1
@@ -131,19 +294,39 @@ services:
     networks:
       - oetp-network
 
-#  redis:
-#    image: redis:7.4.0
-#    ports:
-#      - "6379:6379"
-##    volumes:
-##      - redis-data:/data
-#    networks:
-#      - oetp-network
-#    healthcheck:
-#      test: [ "CMD", "redis-cli", "ping" ]
-#      interval: 5s
-#      timeout: 3s
-#      retries: 5
+  citus-worker3:
+    image: citusdata/citus:12.1
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST_AUTH_METHOD=password
+    volumes:
+      - citus-worker3-data:/var/lib/postgresql/data
+      - ./docker/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    depends_on:
+      - citus-coordinator
+    command: [ "postgres", "-c", "max_prepared_transactions=200" ]
+    networks:
+      - oetp-network
+
+  citus-worker4:
+    image: citusdata/citus:12.1
+    ports:
+      - "5436:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST_AUTH_METHOD=password
+    volumes:
+      - citus-worker4-data:/var/lib/postgresql/data
+      - ./docker/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    depends_on:
+      - citus-coordinator
+    command: [ "postgres", "-c", "max_prepared_transactions=200" ]
+    networks:
+      - oetp-network
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -152,24 +335,68 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - oetp-network
 
-    kafka:
-      image: confluentinc/cp-kafka:latest
-      ports:
-        - "9092:9092"
-      depends_on:
-        - zookeeper
-      environment:
-        KAFKA_BROKER_ID: 1
-        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  kafka:
+    image: confluentinc/cp-kafka:6.2.1
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - oetp-network
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - oetp-network
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/datasources/prometheus-datasource.yml:/etc/grafana/provisioning/datasources/prometheus-datasource.yml
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - oetp-network
+
+  redis:
+    image: redis:7.4.0
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - oetp-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 volumes:
   citus-coordinator-data:
   citus-worker1-data:
   citus-worker2-data:
+  citus-worker3-data:
+  citus-worker4-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
 
 networks:
   oetp-network:
